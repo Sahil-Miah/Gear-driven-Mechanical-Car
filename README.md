@@ -8,7 +8,7 @@ Front-wheel-drive gear car that travels to a wall, reverses via a DPDT switch ci
 
 This project explores the integration of mechanical power transmission (custom gear train), electromechanical control (DPDT motor-reversing circuit), and precision positioning (mechanical stop mechanism) into a single working vehicle. The brief required the vehicle to autonomously reach a wall, reverse, and return to its exact starting position — with no microcontroller or programmable logic involved. All control is achieved through switch-based circuitry.
 
-**[▶ Watch the demo video](./assets/demo.mov)**
+**[▶ Watch the demo video](./assets/demo.mp4)**
 
 ## How It Works
 
