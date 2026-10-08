@@ -8,7 +8,9 @@ This was a Year 1 group project at Manchester Metropolitan University.
 
 ## Demo
 
-[Demo video](./assets/demo.mp4). The car goes down a taped lane to a wooden wall, reverses, and stops on a target mat.
+[Demo video](./assets/demo.mp4). 
+
+The car goes down a taped lane to a wooden wall, reverses, and stops on a target mat.
 
 ## How it works
 
