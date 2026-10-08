@@ -1,126 +1,104 @@
-# Gear-driven-Mechanical-Car
+# Gear-Driven Return-to-Start Car
 
-Front-wheel-drive gear car that travels to a wall, reverses via a DPDT switch circuit, and mechanically returns to its exact starting position — no microcontroller. Features a custom laser-cut gear train and a 1:47 mechanical stopping mechanism.
+A front-wheel-drive car that drives down a lane to a wall, reverses, and comes back to stop where it started. It has no microcontroller. The reversing is done with a DPDT switch, and the stopping is done with a gear train and a microswitch.
 
-![CAD Assembly](./assets/cad_render.jpg)
+This was a Year 1 group project at Manchester Metropolitan University.
 
-## Overview
+![CAD assembly](./assets/cad_render.jpg)
 
-This project explores the integration of mechanical power transmission (custom gear train), electromechanical control (DPDT motor-reversing circuit), and precision positioning (mechanical stop mechanism) into a single working vehicle. The brief required the vehicle to autonomously reach a wall, reverse, and return to its exact starting position — with no microcontroller or programmable logic involved. All control is achieved through switch-based circuitry.
+## Demo
 
-**[▶ Watch the demo video](./assets/demo.mp4)**
+[Demo video](./assets/demo.mp4). The car goes down a taped lane to a wooden wall, reverses, and stops on a target mat.
 
-## How It Works
+## How it works
 
-### Mechanical Drive
-A single 6V DC motor drives the rear axle through a custom gear train, laser-cut from 5mm acrylic:
-- 1x large gear
-- 1x medium two-gear piece (compound gear)
-- 2x small gears
-- 2x mini gears
+### Drive
 
-The gear train steps down motor speed to increase torque at the wheels, allowing a small motor to reliably move the chassis. Drive is transmitted to all four wheels via steel axle rods (19cm, 12cm, and 7cm lengths), with rubber bands fitted as improvised drive tracks across the wheel sets.
+The motor is a 6V DC motor that runs at 35 RPM with no load. A 40-tooth gear on the motor meshes with a 20-tooth gear on the front axle, so the front axle turns at 70 RPM. This gives up some torque to gain speed. The rear axle isn't driven. It just turns as the car rolls.
 
-### Reversing Circuit
-Direction reversal is handled entirely by a **DPDT (Double Pole Double Throw) latching switch**, without any microcontroller:
+### Reversing
 
-![DPDT wiring diagram](./assets/dpdt_circuit.png)
+A DPDT switch swaps which way the motor is connected to the battery, which makes the motor turn the other way. When the front of the car hits the wall, the front switch is hit and the motor reverses, so the car drives back. A separate on/off switch controls the power, and there is a fuse in the circuit for safety.
 
-- Common terminals (B & E) stay permanently connected to the power supply whenever the circuit is live.
-- The motor is wired across the two remaining terminal pairs (A–D and C–F).
-- In one switch position, current flows one way through the motor (forward rotation). Flipping the switch reverses polarity across the motor terminals, reversing rotation.
-- A **microswitch** mounted at the front of the chassis acts as the physical trigger: on contact with the wall, it actuates the DPDT switch, reversing the motor without any manual input.
-- Power to the whole circuit is gated by a simple SPST on/off switch, with a fuse holder and fuse fitted for overcurrent protection.
+![DPDT motor reversal wiring](./assets/dpdt_circuit.png)
 
-### Return-to-Start Mechanism
-A laser-cut acrylic "prong" acts as a mechanical stop, physically halting the vehicle at its original position on the return leg — a purely mechanical solution rather than a second sensor or timed circuit.
+Diagram from electroconcepts.wordpress.com (via the module handbook), used as a reference for the wiring. It isn't our own drawing.
 
-## Design Process
+### Stopping at the start
 
-The gear train and motor selection followed a standard mechanical design method (per MMU's Design Handbook for the 6E4Z0004 Design Project):
+The rear axle turns as the car moves, so we used it to keep track of how far the car has gone. It drives a set of gears that slows the rotation right down:
 
-1. Calculate the minimum required vehicle velocity from the target distance and time constraint, with a safety margin applied.
-2. Assume a wheel radius and derive the required wheel rotational speed from that target velocity.
-3. Calculate the gear ratio needed to match motor output speed to the required wheel speed: 
+- a 12-tooth gear on the rear axle drives a 60-tooth gear
+- the 60-tooth gear shares a shaft with a 10-tooth gear, which drives a 94-tooth gear with a prong on it
 
-   `GR = speed of driver / speed of driven = teeth on driven / teeth on driver`
-4. Iterate on wheel size and gear ratio until a physically achievable gear combination (whole numbers of teeth only) is reached.
+Overall this is a 1:47 reduction, so the prong gear turns once for every 47 turns of the wheels. It is set up to turn about 0.9 of a turn on the way to the wall. When the car reverses, the gears run backwards and the prong turns back by the same amount. When the car is back at the start, the prong hits a microswitch and cuts the power. The prong never makes a full turn, so it can only hit the microswitch at the start position.
 
-This process governed the choice of a multi-stage gear train (rather than a single gear pair) to achieve a practical, manufacturable ratio while keeping torque at the wheels sufficient to move the chassis reliably.
+## Calculations
 
-## Design Calculations
+We sized the drive using the method in the module's design handbook: work out the speed needed for the distance, pick a wheel size, then pick gears so the motor speed matches the wheel speed, using whole numbers of teeth.
 
-**Drivetrain (front-wheel drive):**
-The vehicle is front-wheel drive. The motor's 40-tooth gear meshes with a 20-tooth gear on the front axle:
+**Drive**
 
-`GR = teeth driven / teeth driver = 20/40 = 0.5` → front axle turns at **2× motor speed**
+- Gear ratio = 20 / 40 = 0.5, so the axle turns twice as fast as the motor
+- 35 RPM x 2 = 70 RPM at the front axle
+- The wheel diameter is 70 mm, so speed = π x 0.07 x 70 / 60 = about 0.257 m/s
 
-- Motor no-load speed: 35 RPM
-- Front axle speed: 35 × 2 = **70 RPM**
-- Wheel diameter: 70mm (0.07m)
-- Vehicle speed: v = π × D × n / 60 = π × 0.07 × 70 / 60 ≈ **0.257 m/s** (~25.7 cm/s)
+These numbers use the no-load motor speed and assume the wheels don't slip, so the real car will be a bit slower.
 
-**Return-to-start stopping mechanism:**
-The rear axle is undriven — it free-spins as a direct result of the car rolling forward, and since front and rear wheels share the same 70mm diameter, the rear axle also rotates at 70 RPM. This passive rotation drives a mechanical reduction train that acts as the vehicle's "distance counter," removing the need for any electronic sensor:
+**Stopping mechanism**
 
-- Stage 1: 12T (rear axle, driver) → 60T (compound gear, driven) = 12/60 = **1:5 reduction** → 70 ÷ 5 = 14 RPM
-- Stage 2: 10T (same shaft as the 60T, driver) → 94T pronged gear (driven) = 10/94 = **1:9.4 reduction** → 14 × (10/94) ≈ **1.49 RPM**
-- **Combined reduction: (12/60) × (10/94) = 1:47** — the pronged gear turns once for every 47 revolutions of the rear axle/wheels
+Both axles have 70 mm wheels, so the rear axle also turns at about 70 RPM.
 
-The gear train is deliberately sized so the pronged gear completes only **0.9 of a revolution** over the vehicle's outbound journey to the wall — intentionally undershooting a full turn. On the return leg, the DPDT switch reverses the motor and, by extension, reverses rotation through the entire drivetrain including the stopping mechanism gears. The 94T pronged gear therefore unwinds the same 0.9 revolution it wound up on the way out, arriving back at its exact starting angular position at the same moment the vehicle arrives back at its exact starting physical position — at which point the prong strikes the microswitch and cuts power to the circuit. Because the prong is calibrated to less than a full revolution, it can only ever contact the switch once, at that single defined position — the mechanism functions as a purely mechanical, self-resetting odometer with no electronics involved.
+| Stage | Gears | Ratio | Speed out |
+|---|---|---|---|
+| 1 | 12T to 60T | 12/60 = 1:5 | 70 to 14 RPM |
+| 2 | 10T to 94T | 10/94 = 1:9.4 | 14 to about 1.49 RPM |
+| Overall | | 1:47 | Prong gear turns once per 47 rear-wheel turns |
 
-**Safety:** A fuse and fuse holder are fitted in-line with the power circuit to protect against overcurrent in the event of a motor stall or short circuit — a deliberate design inclusion rather than an oversight, given the vehicle relies on a hard mechanical stop (the microswitch trigger) rather than a soft/electronic cutoff.
-
-## Bill of Materials
-
-Fully custom-manufactured components (gears, axle holders, chassis plank, stopping prong) were laser-cut from 5mm acrylic. All fasteners, motors, and electrical components were sourced from standard lab stock.
+## Bill of materials
 
 | Component | Qty | Notes | Cost |
 |---|---|---|---|
-| 6V DC Motor | 1 | Primary drive | £9.71 |
-| Large gear | 1 | 5mm acrylic, laser-cut | £0.25 |
-| Medium two-gear piece | 1 | 5mm acrylic, compound gear | £0.37 |
+| 6V motor | 1 | 35 RPM no-load | £9.71 |
+| Wheel bearings | 4 | Smoother axle rotation | £11.00 |
+| Wheels | 4 | | £0.90 |
+| Rubber bands | 4 | Wheel tyres | £0.10 |
+| Large gear | 1 | 5mm acrylic | £0.25 |
+| Medium two-gear piece | 1 | 5mm acrylic | £0.37 |
 | Small gears | 2 | 5mm acrylic | £0.18 |
 | Mini gears | 2 | 5mm acrylic | £0.09 |
-| Acrylic chassis plank (26x10cm) | 1 | 5mm acrylic | £1.84 |
+| Acrylic plank (26 x 10 cm) | 1 | 5mm acrylic, chassis | £1.84 |
 | Axle holders | 4 | 5mm acrylic | £0.30 |
-| Stopping mechanism prong | 1 | 5mm acrylic | £0.06 |
-| Wheels | 4 | | £0.90 |
-| Wheel bearings | 4 | | £11.00 |
-| Steel rod (19cm) | 2 | Axles | £0.75 |
-| Steel rod (12cm) | 1 | Axle | £0.24 |
-| Steel rod (7cm) | 1 | Axle | £0.14 |
-| Steel hook | 1 | | £1.30 |
-| DPDT switch (PCB-mount) | 1 | Reversing circuit | £2.36 |
-| SPST on/off switch | 1 | | £0.32 |
-| Microswitch | 1 | Wall-contact trigger | £0.35 |
-| Fuse holder w/ fuse | 1 | Overcurrent protection | £0.05 |
+| Acrylic prong | 1 | 5mm acrylic, stopping mechanism | £0.06 |
+| Steel rod (19 cm) | 2 | | £0.75 |
+| Steel rod (12 cm) | 1 | | £0.24 |
+| Steel rod (7 cm) | 1 | | £0.14 |
+| PCB switch | 1 | DPDT reversing switch | £2.36 |
+| On/off switch | 1 | Main power | £0.32 |
+| Microswitch | 1 | Stops the car when hit by the prong | £0.35 |
+| Fuse holder with fuse | 1 | Overcurrent protection | £0.05 |
+| Batteries | 4 | | £3.32 |
 | Battery holder | 1 | | £0.25 |
 | Battery holder clip | 1 | | £0.25 |
-| Batteries | 4 | | £3.32 |
 | Wires | 12 | | £1.20 |
 | Wall brackets | 2 | | £0.54 |
-| Plastic wall piece | 1 | Target/obstacle | £0.14 |
-| Rubber bands | 4 | Drive tracks | £0.10 |
+| Plastic wall piece | 1 | | £0.14 |
+| Steel hook | 1 | | £1.30 |
 | **Total** | | | **£36.01** |
 
-## Repository Contents
+The budget for the project was £50. The screws were standard lab hardware and aren't modelled in the CAD.
 
-- `CAD for mechanical car.f3z` — full Fusion 360 assembly (native, includes design history)
-- `CAD For Mechanical Car.step` — universal format, viewable without Fusion
-- `Bill of Materials.xlsx` — full itemized cost breakdown
-- `assets/demo.mov` — video of the vehicle completing a full run
-- `assets/dpdt_circuit.png` — DPDT switch wiring reference
-- `assets/cad_render.jpg` — rendered assembly screenshot
+## Files
 
-## What I'd Improve
+- `CAD for mechanical car.f3z`: the Fusion 360 assembly
+- `CAD For Mechanical Car.step`: the same model in a format that opens without Fusion
+- `Bill of Materials.xlsx`: the full cost breakdown
+- `assets/demo.mp4`: video of the car running
+- `assets/dpdt_circuit.png`: DPDT wiring diagram
+- `assets/cad_render.jpg`: screenshot of the CAD assembly
 
-- Model standard fasteners (M2/M3/M4 hardware) in CAD using library components rather than leaving holes unmodeled, for a more complete assembly
-- Add a proper Fusion motion simulation of the gear train and reversing sequence
-- Replace the rubber-band drive tracks with purpose-made belting for more consistent traction
-- Instrument the return position with a simple sensor to quantify positioning accuracy over repeated runs
+## What we'd improve
 
-## Skills Demonstrated
-
-Mechanical power transmission (gear train design and manufacture) · Electromechanical control circuit design (DPDT motor reversal) · CAD assembly modelling (Fusion 360) · Design-to-manufacture workflow (laser-cut acrylic parts) · Cost-conscious component sourcing and BOM management
-
+- Add the screws to the CAD model. They're left out at the moment.
+- Get the motion simulation in Fusion 360 working. It didn't run properly on our model.
+- Measure how close to the start the car actually stops over several runs.
