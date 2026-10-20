@@ -1,8 +1,10 @@
 # Gear-Driven Return-to-Start Car
 
-A front-wheel-drive car that drives down a lane to a wall, reverses, and comes back to stop where it started. It has no microcontroller. The reversing is done with a DPDT switch, and the stopping is done with a gear train and a microswitch.
+Gear-driven car that drives to a wall, reverses with a DPDT switch and returns to its start without a microcontroller.
 
 This was a Year 1 group project at Manchester Metropolitan University.
+
+I designed the gear train and the stopping mechanism. I worked out how wheel diameter, motor speed and gear ratios affect the car’s speed and travel, and I came up with the gear reduction and microswitch design that stops the car at its starting point.
 
 ![CAD assembly](./assets/cad_render.jpg)
 
